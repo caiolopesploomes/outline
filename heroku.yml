@@ -1,0 +1,9 @@
+build:
+  docker:
+    web: Dockerfile
+release:
+  command:
+    - yarn sequelize db:migrate
+run:
+  web: yarn start --services=web,websockets,collaboration
+  worker: yarn start --services=worker
