@@ -1,0 +1,6 @@
+# examples/docker-compose.override.yml
+services:
+  outline:
+    image: outline-custom:oci
+    env_file:
+      - ./examples/.env.oci

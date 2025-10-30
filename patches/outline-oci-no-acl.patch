@@ -1,0 +1,77 @@
+diff --git a/server/utils/s3.ts b/server/utils/s3.ts
+index 1111111..2222222 100644
+--- a/server/utils/s3.ts
++++ b/server/utils/s3.ts
+@@ -1,6 +1,7 @@
+ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+-import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
++import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
++// NOTE: OCI: do not send ACL; it is not supported by OCI S3 Compatibility
+
+ export const s3 = new S3Client({
+   region: process.env.AWS_REGION,
+@@ -30,17 +31,19 @@ export async function presignUpload({
+   contentType,
+   maxSizeBytes = 50 * 1024 * 1024,
+ }: {
+-  bucket: string; key: string; contentType?: string; maxSizeBytes?: number;
++  bucket: string; key: string; contentType?: string; maxSizeBytes?: number;
+ }) {
+   const { url, fields } = await createPresignedPost(s3, {
+     Bucket: bucket,
+     Key: key,
+     Conditions: [
+       ["content-length-range", 1, maxSizeBytes],
+-      { acl: process.env.AWS_S3_ACL || "private" },
++      // OCI: remove ACL condition entirely
+     ],
+     Fields: {
+-      acl: process.env.AWS_S3_ACL || "private",
++      // OCI: do NOT include 'acl' field, otherwise OCI returns NotImplemented
++      // leaving only Content-Type if present
+       ...(contentType ? { "Content-Type": contentType } : {}),
+     },
+     Expires: 3600,
+   });
+   return { url, fields };
+ }
+@@ -52,10 +55,12 @@ export async function putObject({
+   body,
+   contentType,
+ }: {
+-  bucket: string; key: string; body: Buffer|Uint8Array|Blob|string; contentType?: string;
++  bucket: string; key: string; body: Buffer|Uint8Array|Blob|string; contentType?: string;
+ }) {
+   const cmd = new PutObjectCommand({
+     Bucket: bucket,
+     Key: key,
+-    ACL: process.env.AWS_S3_ACL || "private",
++    // OCI: do not send ACL; it is not supported
+     Body: body,
+     ...(contentType ? { ContentType: contentType } : {}),
+   });
+   return s3.send(cmd);
+ }
+diff --git a/server/routes/files.ts b/server/routes/files.ts
+index 3333333..4444444 100644
+--- a/server/routes/files.ts
++++ b/server/routes/files.ts
+@@ -45,12 +45,12 @@ router.post("files.create", auth(), rateLimiter(), async (ctx) => {
+   // ... snip ...
+-  const { url, fields } = await presignUpload({
+-    bucket: env.AWS_S3_UPLOAD_BUCKET_NAME,
+-    key: key,
+-    contentType: mimeType,
+-    maxSizeBytes: FILE_UPLOAD_MAX_SIZE,
+-  });
++  const { url, fields } = await presignUpload({
++    bucket: env.AWS_S3_UPLOAD_BUCKET_NAME,
++    key: key,
++    contentType: mimeType,
++    maxSizeBytes: FILE_UPLOAD_MAX_SIZE,
++  });
+   ctx.body = {
+     ok: true,
+     data: { url, fields },
+   };
+ });
