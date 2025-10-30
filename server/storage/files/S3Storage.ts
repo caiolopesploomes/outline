@@ -112,7 +112,6 @@ export default class S3Storage extends BaseStorage {
     const upload = new Upload({
       client: this.client,
       params: {
-        ACL: acl as ObjectCannedACL,
         Bucket: this.getBucket(),
         Key: key,
         ContentType: contentType,
