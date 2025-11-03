@@ -185,8 +185,8 @@ export class NotionClient {
     while (hasMore) {
       const response = await this.fetchWithRetry(() =>
         this.client.search({
-          start_cursor: cursor,
           page_size: this.pageSize,
+          ...(cursor ? { start_cursor: cursor } : {}),
         })
       );
 
@@ -244,8 +244,8 @@ export class NotionClient {
       const response = await this.fetchWithRetry(() =>
         this.client.blocks.children.list({
           block_id: blockId,
-          start_cursor: cursor,
           page_size: this.pageSize,
+          ...(cursor ? { start_cursor: cursor } : {}),
         })
       );
 
@@ -280,8 +280,8 @@ export class NotionClient {
         this.client.databases.query({
           database_id: databaseId,
           filter_properties: ["title"],
-          start_cursor: cursor,
           page_size: this.pageSize,
+          ...(cursor ? { start_cursor: cursor } : {}),
         })
       );
 
