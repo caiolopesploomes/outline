@@ -25,6 +25,7 @@ If you have questions or improvements for the docs please create a thread in [Gi
 
 # Development
 
+
 There is a short guide for [setting up a development environment](https://docs.getoutline.com/s/hosting/doc/local-development-5hEhFRXow7) if you wish to contribute changes, fixes, and improvements to Outline.
 
 ## Contributing
